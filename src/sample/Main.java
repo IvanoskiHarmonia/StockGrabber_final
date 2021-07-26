@@ -35,6 +35,7 @@ public class Main extends Application {
         //login grid
         GridPane loginGrid = new GridPane();
         Scene loginScene = new Scene(loginGrid, 400, 350);
+
         //Sign up grid
         GridPane signUpGrid = new GridPane();
         Scene signUpScene = new Scene(signUpGrid,  400, 350);
@@ -89,7 +90,10 @@ public class Main extends Application {
 
         grid.add(content.exitButton, 10, 10);
         content.exitButton.getStyleClass().add( "Exit");
-        content.exitButton.setOnAction(e -> Platform.exit());
+        content.exitButton.setOnAction(e -> {
+            Platform.setImplicitExit(true);
+            Platform.exit();
+        });
 
         //login grid things
         loginGrid.add(content.welcomeText, 5, 0);
@@ -107,6 +111,7 @@ public class Main extends Application {
         content.notSignedUpL.getStyleClass().add( "turnWhite");
         content.notSignedUp.getStyleClass().add( "notSignedUpB");
         content.loginButton.getStyleClass().add( "loginButton");
+        content.wrongPass.setStyle( "-fx-text-fill: red;");
 
 
         //Sign up grid content
@@ -140,7 +145,7 @@ public class Main extends Application {
             primaryStage.show();
         });
 
-        content.wrongPass.setStyle( "-fx-text-fill: red;");
+
 
         primaryStage.setTitle("Welcome to Martin's Stock Grabber with API");
         primaryStage.setScene(loginScene);
@@ -163,59 +168,48 @@ public class Main extends Application {
 
 
         //writing aka Sign up
-        content.signUp.setOnAction(e -> {
-            new Thread() {
-
-                // runnable for that thread
-                public void run() {
-                    for(int i = 0; i < content.usernames.size(); ++i){
-                        if(content.newUsername.getText().equalsIgnoreCase(content.usernames.get(i)))
-                            content.exists = true;
-                        if(content.newPass.getText().length() < 7)
-                            content.toSmall = true;
-                        if(!content.exists && i == content.usernames.size()-1 && !content.toSmall && (content.newPass.getText().equals(content.confirmPassword.getText()))) {
-                            write.append("\n"+content.newUsername.getText() + "," + controller.stringToHexInverted(content.newPass.getText()));
-                            write.close();
-                            content.usernames.add(content.newUsername.getText());
-                            content.passwords.add(controller.stringToHexInverted(content.newPass.getText()));
-                            content.accCreated = true;
-                            break;
-                        }
-                        content.closeIt = true;
-                    }
-                    if(content.closeIt)
-                        write.close();
-
-                    // update ProgressIndicator on FX thread
-                    Platform.runLater(new Runnable() {
-
-                        public void run() {
-                            if(content.accCreated){
-                                content.accountCreated.setStyle( "-fx-text-fill: green;");
-                                content.accountCreated.setText("Your account was created, Welcome!");
-                                content.required.setText("");
-                                content.alreadyExistUsername.setText("");
-                                content.exists = false;
-                                content.toSmall = false;
-                            }
-                            if(content.exists){
-                                content.alreadyExistUsername.setText("that username already exist!");
-                                content.alreadyExistUsername.setStyle( "-fx-text-fill: red;");
-                            }
-                            if(content.toSmall){
-                                content.required.setStyle( "-fx-text-fill: red;");
-                                content.required.setText("Password much have more than 8 characters.");
-                            }
-
-
-                        }
-                    });
-
+        content.signUp.setOnAction(e -> new Thread(() -> {
+            for(int i = 0; i < content.usernames.size(); ++i){
+                if(content.newUsername.getText().equalsIgnoreCase(content.usernames.get(i)))
+                    content.exists = true;
+                if(content.newPass.getText().length() < 7)
+                    content.toSmall = true;
+                if(!content.exists && i == content.usernames.size()-1 && !content.toSmall && (content.newPass.getText().equals(content.confirmPassword.getText()))) {
+                    write.append("\n").append(content.newUsername.getText()).append(",").append(controller.stringToHexInverted(content.newPass.getText()));
+                    write.close();
+                    content.usernames.add(content.newUsername.getText());
+                    content.passwords.add(controller.stringToHexInverted(content.newPass.getText()));
+                    content.accCreated = true;
+                    break;
                 }
-            }.start();
+                content.closeIt = true;
+            }
+            if(content.closeIt)
+                write.close();
+
+            // update ProgressIndicator on FX thread
+            Platform.runLater(() -> {
+                if(content.accCreated){
+                    content.accountCreated.setStyle( "-fx-text-fill: green;");
+                    content.accountCreated.setText("Your account was created, Welcome!");
+                    content.required.setText("");
+                    content.alreadyExistUsername.setText("");
+                    content.exists = false;
+                    content.toSmall = false;
+                }
+                if(content.exists){
+                    content.alreadyExistUsername.setText("that username already exist!");
+                    content.alreadyExistUsername.setStyle( "-fx-text-fill: red;");
+                }
+                if(content.toSmall){
+                    content.required.setStyle( "-fx-text-fill: red;");
+                    content.required.setText("Password much have more than 8 characters.");
+                }
 
 
-        });
+            });
+
+        }).start());
         //end of the writing in the customer.csv file
 
         //login scene code
@@ -240,7 +234,7 @@ public class Main extends Application {
             xAxis.setLabel("Number of seconds after start of monitoring the stock");
             //creating the chart
             final LineChart<Number,Number> lineChart =
-                    new LineChart<Number,Number>(xAxis,yAxis);
+                    new LineChart<>(xAxis, yAxis);
 
             lineChart.setTitle("Stock Monitoring, 2021");
             //defining a series
@@ -281,17 +275,14 @@ public class Main extends Application {
                         }, 0, 500);
                 Timeline settingPrices = new Timeline(
                         new KeyFrame(Duration.seconds(0.5),
-                                new EventHandler<ActionEvent>() {
-                                    @Override
-                                    public void handle(ActionEvent event) {
-                                        if(!content.pass){
-                                            content.StockPrice.setText("$"+content.price);
-                                            String diff = String.format( "%.6f", Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice));
-                                            content.differenceFromLastPrice.setText( diff);
-                                            content.differenceFromLastPrice.setStyle(Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice) >= 0 ? "-fx-background-color: green; -fx-text-fill: white;" : "-fx-background-color: red; -fx-text-fill: white;");
-                                            content.StockPrice.setStyle(Double.parseDouble(content.price) >= Double.parseDouble(content.lastPrice) ? "-fx-effect: dropshadow( gaussian , #033500 , 1,3,2,5 );-fx-background-color: green; -fx-text-fill: white;" : "-fx-effect: dropshadow( gaussian , #800000 , 1,2,1,3 );-fx-background-color: red; -fx-text-fill: white;");
-                                            content.pass = true;
-                                        }
+                                event -> {
+                                    if(!content.pass){
+                                        content.StockPrice.setText("$"+content.price);
+                                        String diff = String.format( "%.6f", Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice));
+                                        content.differenceFromLastPrice.setText( diff);
+                                        content.differenceFromLastPrice.setStyle(Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice) >= 0 ? "-fx-background-color: green; -fx-text-fill: white;" : "-fx-background-color: red; -fx-text-fill: white;");
+                                        content.StockPrice.setStyle(Double.parseDouble(content.price) >= Double.parseDouble(content.lastPrice) ? "-fx-effect: dropshadow( gaussian , #033500 , 1,3,2,5 );-fx-background-color: green; -fx-text-fill: white;" : "-fx-effect: dropshadow( gaussian , #800000 , 1,2,1,3 );-fx-background-color: red; -fx-text-fill: white;");
+                                        content.pass = true;
                                     }
                                 }));
                 settingPrices.setCycleCount(Timeline.INDEFINITE);
