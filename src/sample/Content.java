@@ -66,6 +66,7 @@ public class Content {
     boolean pass = true;
     boolean closeIt = false;
     boolean exists = false;
+    boolean deleteChart = false;
 
     //storing passwords and usernames.
     ArrayList<String> usernames = new ArrayList<>();

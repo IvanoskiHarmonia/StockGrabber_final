@@ -93,6 +93,7 @@ public class Main extends Application {
         content.exitButton.setOnAction(e -> {
             Platform.setImplicitExit(true);
             Platform.exit();
+            return;
         });
 
         //login grid things
@@ -229,17 +230,29 @@ public class Main extends Application {
 
         //Chart in the main scene, has to be made much better
         content.showChart.setOnAction(e -> {
+
+
             final NumberAxis xAxis = new NumberAxis();
             final NumberAxis yAxis = new NumberAxis();
+            xAxis.setForceZeroInRange(false);
+            yAxis.setForceZeroInRange(false);
+
             xAxis.setLabel("Number of seconds after start of monitoring the stock");
             //creating the chart
             final LineChart<Number,Number> lineChart =
                     new LineChart<>(xAxis, yAxis);
 
+            lineChart.setCreateSymbols(false);
+            if(content.deleteChart){
+                grid.getChildren().remove(lineChart);
+                content.deleteChart = false;
+            }
+
             lineChart.setTitle("Stock Monitoring, 2021");
             //defining a series
             XYChart.Series series = new XYChart.Series();
             series.setName("My portfolio");
+            series.getData().removeAll();
             //populating the series with data
             for(int i = 0; i < content.pricesChart.size(); ++i){
                 series.getData().add(new XYChart.Data(i, content.pricesChart.get(i)));
@@ -247,7 +260,11 @@ public class Main extends Application {
 
             primaryStage.setMaximized(true);
             lineChart.getData().add(series);
-            grid.add(lineChart, 7 , 4);
+            if(!content.deleteChart){
+                grid.add(lineChart, 7 , 4);
+                content.deleteChart = true;
+            }
+
         });
 
 
