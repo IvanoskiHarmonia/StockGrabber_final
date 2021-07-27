@@ -7,6 +7,8 @@ import javafx.scene.control.TextField;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Content {
 
@@ -74,10 +76,21 @@ public class Content {
     File file = new File("Customers.csv");
     String row;
 
+    int i = 0;
 
-    ArrayList<Double> pricesChart = new ArrayList<>();
+
+    List<Double> pricesChartlist = new ArrayList<>(Arrays.asList());
+    private List<Double> pricesChart = new ArrayList<>();
 
     String stockOrCrypto = "";
     String nameOfStockCrypto = "";
 
+    public void setPricesChart(List<Double> pricesChart) {
+        if(pricesChart != null)
+        this.pricesChart.addAll(pricesChart);
+    }
+
+    public ArrayList<Double> getPricesChart() {
+        return new ArrayList<>(pricesChartlist);
+    }
 }

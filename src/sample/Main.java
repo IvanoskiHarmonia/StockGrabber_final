@@ -1,10 +1,10 @@
 package sample;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.GridPane;
@@ -55,6 +55,7 @@ public class Main extends Application {
         Content content = new Content();
         StockFetcher stockFetch = new StockFetcher();
         Controller controller = new Controller();
+        Chart chart = new Chart();
 
 
         //linking the CSS with JavaFx
@@ -93,7 +94,6 @@ public class Main extends Application {
         content.exitButton.setOnAction(e -> {
             Platform.setImplicitExit(true);
             Platform.exit();
-            return;
         });
 
         //login grid things
@@ -230,42 +230,45 @@ public class Main extends Application {
 
         //Chart in the main scene, has to be made much better
         content.showChart.setOnAction(e -> {
-
-
-            final NumberAxis xAxis = new NumberAxis();
-            final NumberAxis yAxis = new NumberAxis();
-            xAxis.setForceZeroInRange(false);
-            yAxis.setForceZeroInRange(false);
-
-            xAxis.setLabel("Number of seconds after start of monitoring the stock");
-            //creating the chart
-            final LineChart<Number,Number> lineChart =
-                    new LineChart<>(xAxis, yAxis);
-
-            lineChart.setCreateSymbols(false);
-            if(content.deleteChart){
-                grid.getChildren().remove(lineChart);
-                content.deleteChart = false;
-            }
-
-            lineChart.setTitle("Stock Monitoring, 2021");
-            //defining a series
-            XYChart.Series series = new XYChart.Series();
-            series.setName("My portfolio");
-            series.getData().removeAll();
-            //populating the series with data
-            for(int i = 0; i < content.pricesChart.size(); ++i){
-                series.getData().add(new XYChart.Data(i, content.pricesChart.get(i)));
-            }
-
-            primaryStage.setMaximized(true);
-            lineChart.getData().add(series);
             if(!content.deleteChart){
-                grid.add(lineChart, 7 , 4);
+                grid.add(chart.lineChart, 7 , 4);
+                primaryStage.setMaximized(true);
                 content.deleteChart = true;
             }
+            chart.xAxis.setForceZeroInRange(false);
+            chart.yAxis.setForceZeroInRange(false);
+            chart.lineChart.setCreateSymbols(false);
 
+            chart.xAxis.setLabel("Number of seconds after start of monitoring");
+
+            chart.lineChart.setTitle("Stock Monitoring, 2021");
+            //
+            Timeline chartPrices2 = new Timeline(
+                    new KeyFrame(Duration.seconds(2),
+                            event -> {
+                                if(content.getPricesChart().size() >= 10){
+                                    chart.lineChart.getData().clear();
+
+
+                                XYChart.Series series = new XYChart.Series();
+                                series.setName("My portfolio");
+
+                                    series.getData().removeAll();
+
+                                //populating the series with data
+                                for(int i = 0; i < content.getPricesChart().size(); i+= content.getPricesChart().size()/10){
+                                    series.getData().add(new XYChart.Data(i, content.getPricesChart().get(i)));
+                                }
+
+
+                                chart.lineChart.getData().add(series);
+
+                                }
+                            }));
+                chartPrices2.setCycleCount(Timeline.INDEFINITE);
+                chartPrices2.play();
         });
+
 
 
         //Class for the method I have to grab the price of any stock/crypto
@@ -281,8 +284,10 @@ public class Main extends Application {
                                     if(content.pass){
                                         content.lastPrice = content.price;
                                         content.price = stockFetch.stock( content.stockOrCrypto , content.nameOfStockCrypto);
-                                        content.pricesChart.add(Double.parseDouble(content.price));
+                                        content.pricesChartlist.add(Double.parseDouble(content.price));
+                                        content.setPricesChart(content.pricesChartlist);
                                         content.pass = false;
+                                        content.i++;
                                     }
                                 }catch (Exception ex){
                                     ex.printStackTrace();
