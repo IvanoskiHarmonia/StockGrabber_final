@@ -1,29 +1,21 @@
 package sample;
 
 import javafx.animation.*;
+
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.scene.Node;
+
 import javafx.scene.Scene;
-import javafx.scene.control.PasswordField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+
 import javafx.geometry.Insets;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 
-import javafx.event.EventHandler;
-
-import java.util.List;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
 
-import javafx.scene.control.Button;
 import javafx.util.Duration;
 
 
@@ -136,23 +128,7 @@ public class Main extends Application {
 
 
 
-
-        content.notSignedUp.setOnAction(e -> {
-            primaryStage.setScene(signUpScene);
-            primaryStage.show();
-        });
-        content.loginSceneButton.setOnAction(e -> {
-            primaryStage.setScene(loginScene);
-            primaryStage.show();
-        });
-
-
-
-        primaryStage.setTitle("Welcome to Martin's Stock Grabber with API");
-        primaryStage.setScene(loginScene);
-        primaryStage.show();
-        Platform.setImplicitExit(false);
-
+        //transition from adding to the scenes to code that controls the stuff on the scenes
 
 
         //reading for the login
@@ -163,10 +139,22 @@ public class Main extends Application {
             content.passwords.add(data[1]);
         }
 
+        //login scene code
+        content.loginButton.setOnAction(e -> {
+            for(int i = 0; i < content.usernames.size(); ++i){
+                if(content.passwordField.getText().equals( controller.hexToStringReverted(content.passwords.get(i))) && content.usernameField.getText().equalsIgnoreCase(content.usernames.get(i))){
+                    primaryStage.setScene(scene);
+                    primaryStage.show();
+                }
+                else{
+                    if(i == content.usernames.size()-1)
+                        content.wrongPass.setText( "Wrong Password or wrong Username, Try Again");
+                }
+            }
+        });
 
 
         PrintWriter write = new PrintWriter(new FileWriter(content.file, true));
-
 
         //writing aka Sign up
         content.signUp.setOnAction(e -> new Thread(() -> {
@@ -213,22 +201,10 @@ public class Main extends Application {
         }).start());
         //end of the writing in the customer.csv file
 
-        //login scene code
-        content.loginButton.setOnAction(e -> {
-            for(int i = 0; i < content.usernames.size(); ++i){
-                if(content.passwordField.getText().equals( controller.hexToStringReverted(content.passwords.get(i))) && content.usernameField.getText().equalsIgnoreCase(content.usernames.get(i))){
-                    primaryStage.setScene(scene);
-                    primaryStage.show();
-                }
-                else{
-                    if(i == content.usernames.size()-1)
-                        content.wrongPass.setText( "Wrong Password or wrong Username, Try Again");
-                }
-            }
-        });
 
 
-        //Chart in the main scene, has to be made much better
+
+        //Chart in the main scene
         content.showChart.setOnAction(e -> {
             if(!content.deleteChart){
                 grid.add(chart.lineChart, 7 , 4);
@@ -242,33 +218,27 @@ public class Main extends Application {
             chart.xAxis.setLabel("Number of seconds after start of monitoring");
 
             chart.lineChart.setTitle("Stock Monitoring, 2021");
-            //
+            //updating the UI every 2 sec, works like magic lol:D
             Timeline chartPrices2 = new Timeline(
                     new KeyFrame(Duration.seconds(2),
                             event -> {
                                 if(content.getPricesChart().size() >= 10){
                                     chart.lineChart.getData().clear();
 
+                                    XYChart.Series series = new XYChart.Series();
+                                    series.setName("My portfolio");
 
-                                XYChart.Series series = new XYChart.Series();
-                                series.setName("My portfolio");
+                                    //populating the series with data
+                                    for(int i = 0; i < content.getPricesChart().size(); i+= content.getPricesChart().size()/10){
+                                        series.getData().add(new XYChart.Data(i, content.getPricesChart().get(i)));
+                                    }
 
-                                    series.getData().removeAll();
-
-                                //populating the series with data
-                                for(int i = 0; i < content.getPricesChart().size(); i+= content.getPricesChart().size()/10){
-                                    series.getData().add(new XYChart.Data(i, content.getPricesChart().get(i)));
-                                }
-
-
-                                chart.lineChart.getData().add(series);
-
+                                    chart.lineChart.getData().add(series);
                                 }
                             }));
                 chartPrices2.setCycleCount(Timeline.INDEFINITE);
                 chartPrices2.play();
         });
-
 
 
         //Class for the method I have to grab the price of any stock/crypto
@@ -312,7 +282,20 @@ public class Main extends Application {
             }
         });
 
+        primaryStage.setTitle("Welcome to Martin's Stock Grabber with API");
+        primaryStage.setScene(loginScene);
+        primaryStage.show();
+        //Platform.setImplicitExit(false);
 
+        //changing scenes
+        content.notSignedUp.setOnAction(e -> {
+            primaryStage.setScene(signUpScene);
+            primaryStage.show();
+        });
+        content.loginSceneButton.setOnAction(e -> {
+            primaryStage.setScene(loginScene);
+            primaryStage.show();
+        });
 
     }
 
