@@ -15,7 +15,6 @@ import javafx.scene.chart.XYChart;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
-import java.util.function.UnaryOperator;
 
 import javafx.util.Duration;
 
@@ -180,6 +179,7 @@ public class Main extends Application {
 
             // update ProgressIndicator on FX thread
             Platform.runLater(() -> {
+
                 if(content.accCreated){
                     content.accountCreated.setStyle( "-fx-text-fill: green;");
                     content.accountCreated.setText("Your account was created, Welcome!");
@@ -201,8 +201,6 @@ public class Main extends Application {
 
         }).start());
         //end of the writing in the customer.csv file
-
-
 
 
         //Chart in the main scene
@@ -305,7 +303,7 @@ public class Main extends Application {
             }
         });
 
-        primaryStage.setTitle("Welcome to Martin's Stock Grabber with API");
+        primaryStage.setTitle("Martin's Stock Grabber with API");
         primaryStage.setScene(loginScene);
         primaryStage.show();
         //Platform.setImplicitExit(false);
