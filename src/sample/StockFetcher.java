@@ -13,6 +13,14 @@ import java.net.URLConnection;
 public class StockFetcher {
     Content content = new Content();
 
+    public boolean checkURL(String stockOrCrypto, String nameOfStockCrypto) throws Exception {
+        URL url = new URL("https://robinhood.com/" + stockOrCrypto +"/" + nameOfStockCrypto);
+        URLConnection urlConnection = url.openConnection();
+        HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+        return connection.getResponseCode() == 200;
+
+    }
+
     public String stock(String stockOrCrypto, String nameOfStockCrypto) throws Exception {
 
         String prices = "";
@@ -21,8 +29,6 @@ public class StockFetcher {
             URL url = new URL("https://robinhood.com/" + stockOrCrypto +"/" + nameOfStockCrypto);//https://docs.oracle.com/javase/7/docs/api/java/net/URL.html
             URLConnection urlConnection = url.openConnection();//https://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html
             //An InputStreamReader is a bridge from byte streams to character streams: It reads bytes and decodes them into characters using a specified charset .
-            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-            if(content.isAlreadyCheckedURL() || connection.getResponseCode() == 200){
                 InputStreamReader inStream = new InputStreamReader(urlConnection.getInputStream());//https://docs.oracle.com/javase/7/docs/api/java/io/InputStreamReader.html#:~:text=An%20InputStreamReader%20is%20a%20bridge,default%20charset%20may%20be%20accepted.
                 BufferedReader buffer = new BufferedReader(inStream);//https://www.tutorialspoint.com/bufferedreader-class-in-java
                 String line = buffer.readLine();
@@ -45,11 +51,8 @@ public class StockFetcher {
                     line = buffer.readLine();
                 }//while(line != null) close
 
-            }//if connection.getResponse close
-            else{
-                content.wrongStock.setText("WrongStock");
-                return "incorrect stock/crypto";
-            }
+
+
 
 
 //        }catch (FileNotFoundException inputE) {

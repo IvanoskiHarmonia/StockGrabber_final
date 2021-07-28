@@ -15,6 +15,7 @@ import javafx.scene.chart.XYChart;
 import java.util.*;
 import java.lang.*;
 import java.io.*;
+import java.util.function.UnaryOperator;
 
 import javafx.util.Duration;
 
@@ -196,7 +197,6 @@ public class Main extends Application {
                     content.required.setText("Password much have more than 8 characters.");
                 }
 
-
             });
 
         }).start());
@@ -219,6 +219,7 @@ public class Main extends Application {
             chart.xAxis.setLabel("Number of seconds after start of monitoring");
 
             chart.lineChart.setTitle("Stock Monitoring, 2021");
+
             //updating the UI every 2 sec, works like magic lol:D
             Timeline chartPrices2 = new Timeline(
                     new KeyFrame(Duration.seconds(2),
@@ -233,7 +234,7 @@ public class Main extends Application {
                                     for(int i = 0; i < content.getPricesChart().size(); i+= content.getPricesChart().size()/10){
                                         series.getData().add(new XYChart.Data(i, content.getPricesChart().get(i)));
                                     }
-
+                                    System.out.println(series.getData());
                                     chart.lineChart.getData().add(series);
                                 }
                             }));
@@ -242,15 +243,25 @@ public class Main extends Application {
         });
 
 
+
         //Class for the method I have to grab the price of any stock/crypto
         content.grabValue.setOnAction(e -> {
             content.setAlreadyCheckedURL(false);
             try{
-                if(!content.nameOfStockCrypto.equalsIgnoreCase(content.nameOfStock.getText()) && !stockFetch.stock(content.stockOrCrypto,content.nameOfStock.getText().toUpperCase()).equalsIgnoreCase("incorrect stock/crypto")){
-                    content.wrongStock.setStyle("-fx-text-fill: green;");
-                    content.wrongStock.setText("Correct Stock");
+                if(!content.nameOfStockCrypto.equalsIgnoreCase(content.nameOfStock.getText()) && stockFetch.checkURL(content.stockOrCrypto,content.nameOfStock.getText().toUpperCase())){
                     content.nameOfStockCrypto = content.nameOfStock.getText().toUpperCase();
-                    content.setAlreadyCheckedURL(true);
+                    List<Double> list = new ArrayList<>();
+                    content.setPricesChart(list);
+                    Timeline changingCorrectness = new Timeline(
+                            new KeyFrame(Duration.seconds(0.5),
+                                    event -> {
+                                        content.wrongStock.setStyle("-fx-text-fill: green;");
+                                        content.wrongStock.setText("Correct Stock");
+                                    }));
+                    changingCorrectness.setCycleCount(0);
+                    changingCorrectness.play();
+
+
                     new Timer().schedule(
                             new TimerTask() {
 
@@ -285,6 +296,7 @@ public class Main extends Application {
                                     }));
                     settingPrices.setCycleCount(Timeline.INDEFINITE);
                     settingPrices.play();
+
                 }else {
                     content.wrongStock.setStyle("-fx-text-fill: red;");
                     content.wrongStock.setText("Wrong Stock, or incorrect specifications");
