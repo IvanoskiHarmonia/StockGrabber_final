@@ -53,6 +53,7 @@ public class Content {
     Button showChart = new Button("Show Chart");
 
     //Labels Main Scene
+    Label wrongStock = new Label();
     Label StockPrice = new Label();
     Label differenceFromLastPrice = new Label();
     Label labelCryptoStock = new Label("Stock\t or \tCrypto");
@@ -69,6 +70,15 @@ public class Content {
     boolean closeIt = false;
     boolean exists = false;
     boolean deleteChart = false;
+    private boolean alreadyCheckedURL = false;
+
+    public void setAlreadyCheckedURL(boolean alreadyCheckedURL) {
+        this.alreadyCheckedURL = alreadyCheckedURL;
+    }
+
+    public boolean isAlreadyCheckedURL() {
+        return alreadyCheckedURL;
+    }
 
     //storing passwords and usernames.
     ArrayList<String> usernames = new ArrayList<>();

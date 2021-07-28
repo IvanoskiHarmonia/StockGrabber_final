@@ -163,3 +163,39 @@
     -fx-effect: dropshadow( gaussian , #a30000 , 0,0,0,2 );
 }
 
+
+
+//chart CSS
+
+.chart {
+    -fx-padding: 10px;
+}
+.chart-content {
+    -fx-padding: 30px;
+}
+
+.chart-title {
+  -fx-text-fill: white;
+  -fx-font-size: 1.6em;
+}
+.axis{
+    -fx-font-size: 1.4em;
+    -fx-tick-label-fill: white;
+}
+.axis-label {
+  -fx-text-fill: white;
+}
+
+.chart-legend {
+   -fx-background-color:  transparent;
+   -fx-padding: 20px;
+}
+
+.chart-legend-item-symbol{
+   -fx-background-radius: 0;
+}
+
+.chart-legend-item{
+    -fx-text-fill: #191970;
+}
+

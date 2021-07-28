@@ -60,6 +60,7 @@ public class Main extends Application {
         content.labelCryptoStock.setStyle( "-fx-text-fill: white;");
         grid.add(content.stock, 0, 1);
         grid.add(content.crypto, 1, 1);
+        grid.add(content.wrongStock, 1, 3);
         content.stock.getStyleClass().add("cryptoStock");
         content.crypto.getStyleClass().add("cryptoStock");
         content.stock.setOnAction(ex -> content.stockOrCrypto = "stocks");
@@ -243,42 +244,53 @@ public class Main extends Application {
 
         //Class for the method I have to grab the price of any stock/crypto
         content.grabValue.setOnAction(e -> {
-            if(!content.nameOfStockCrypto.equalsIgnoreCase(content.nameOfStock.getText())){
-                content.nameOfStockCrypto = content.nameOfStock.getText().toUpperCase();
-                new Timer().schedule(
-                        new TimerTask() {
+            content.setAlreadyCheckedURL(false);
+            try{
+                if(!content.nameOfStockCrypto.equalsIgnoreCase(content.nameOfStock.getText()) && !stockFetch.stock(content.stockOrCrypto,content.nameOfStock.getText().toUpperCase()).equalsIgnoreCase("incorrect stock/crypto")){
+                    content.wrongStock.setStyle("-fx-text-fill: green;");
+                    content.wrongStock.setText("Correct Stock");
+                    content.nameOfStockCrypto = content.nameOfStock.getText().toUpperCase();
+                    content.setAlreadyCheckedURL(true);
+                    new Timer().schedule(
+                            new TimerTask() {
 
-                            @Override
-                            public void run() {
-                                try{
-                                    if(content.pass){
-                                        content.lastPrice = content.price;
-                                        content.price = stockFetch.stock( content.stockOrCrypto , content.nameOfStockCrypto);
-                                        content.pricesChartlist.add(Double.parseDouble(content.price));
-                                        content.setPricesChart(content.pricesChartlist);
-                                        content.pass = false;
-                                        content.i++;
+                                @Override
+                                public void run() {
+                                    try{
+                                        if(content.pass){
+                                            content.lastPrice = content.price;
+                                            content.price = stockFetch.stock( content.stockOrCrypto , content.nameOfStockCrypto);
+                                            content.pricesChartlist.add(Double.parseDouble(content.price));
+                                            content.setPricesChart(content.pricesChartlist);
+                                            content.pass = false;
+                                            content.i++;
+                                        }
+                                    }catch (Exception ex){
+                                        ex.printStackTrace();
                                     }
-                                }catch (Exception ex){
-                                    ex.printStackTrace();
+
                                 }
-
-                            }
-                        }, 0, 500);
-                Timeline settingPrices = new Timeline(
-                        new KeyFrame(Duration.seconds(0.5),
-                                event -> {
-                                    if(!content.pass){
-                                        content.StockPrice.setText("$"+content.price);
-                                        String diff = String.format( "%.6f", Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice));
-                                        content.differenceFromLastPrice.setText( diff);
-                                        content.differenceFromLastPrice.setStyle(Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice) >= 0 ? "-fx-background-color: green; -fx-text-fill: white;" : "-fx-background-color: red; -fx-text-fill: white;");
-                                        content.StockPrice.setStyle(Double.parseDouble(content.price) >= Double.parseDouble(content.lastPrice) ? "-fx-effect: dropshadow( gaussian , #033500 , 1,3,2,5 );-fx-background-color: green; -fx-text-fill: white;" : "-fx-effect: dropshadow( gaussian , #800000 , 1,2,1,3 );-fx-background-color: red; -fx-text-fill: white;");
-                                        content.pass = true;
-                                    }
-                                }));
-                settingPrices.setCycleCount(Timeline.INDEFINITE);
-                settingPrices.play();
+                            }, 0, 500);
+                    Timeline settingPrices = new Timeline(
+                            new KeyFrame(Duration.seconds(0.5),
+                                    event -> {
+                                        if(!content.pass){
+                                            content.StockPrice.setText("$"+content.price);
+                                            String diff = String.format( "%.6f", Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice));
+                                            content.differenceFromLastPrice.setText( diff);
+                                            content.differenceFromLastPrice.setStyle(Double.parseDouble(content.price) - Double.parseDouble(content.lastPrice) >= 0 ? "-fx-background-color: green; -fx-text-fill: white;" : "-fx-background-color: red; -fx-text-fill: white;");
+                                            content.StockPrice.setStyle(Double.parseDouble(content.price) >= Double.parseDouble(content.lastPrice) ? "-fx-effect: dropshadow( gaussian , #033500 , 1,3,2,5 );-fx-background-color: green; -fx-text-fill: white;" : "-fx-effect: dropshadow( gaussian , #800000 , 1,2,1,3 );-fx-background-color: red; -fx-text-fill: white;");
+                                            content.pass = true;
+                                        }
+                                    }));
+                    settingPrices.setCycleCount(Timeline.INDEFINITE);
+                    settingPrices.play();
+                }else {
+                    content.wrongStock.setStyle("-fx-text-fill: red;");
+                    content.wrongStock.setText("Wrong Stock, or incorrect specifications");
+                }
+            }catch (Exception exception){
+                exception.printStackTrace();
             }
         });
 
