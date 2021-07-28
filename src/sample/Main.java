@@ -234,7 +234,6 @@ public class Main extends Application {
                                     for(int i = 0; i < content.getPricesChart().size(); i+= content.getPricesChart().size()/10){
                                         series.getData().add(new XYChart.Data(i, content.getPricesChart().get(i)));
                                     }
-                                    System.out.println(series.getData());
                                     chart.lineChart.getData().add(series);
                                 }
                             }));
